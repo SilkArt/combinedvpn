@@ -34,19 +34,18 @@ export async function handler(event, context) {
     'https://raw.githubusercontent.com/STR97/STRUGOV/refs/heads/main/STR.BYPASS',
     'https://raw.githubusercontent.com/STR97/STRUGOV/refs/heads/main/Vless',
     'https://raw.githubusercontent.com/STR97/STRUGOV/refs/heads/main/STR',
-    'https://raw.githubusercontent.com/STR97/STRUGOV/refs/heads/main/BYPASS',
+    'https://raw.githubusercontent.com/STR97/STRUGOV/refs/heads/main/BYPASS'
   ];
 
-  let combinedText = '';
+  let combined = '';
 
   for (const url of urls) {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const text = await response.text();
-      combinedText += `\n--- Start of ${url} ---\n${text}\n--- End of ${url} ---\n`;
-    } catch (error) {
-      combinedText += `\nError fetching ${url}: ${error.message}\n`;
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      combined += await res.text() + '\n';
+    } catch (err) {
+      // Skip failed URLs silently
     }
   }
 
@@ -56,6 +55,6 @@ export async function handler(event, context) {
       'Content-Type': 'text/plain',
       'Cache-Control': 'no-cache'
     },
-    body: combinedText
+    body: combined.trim() // clean trailing newline
   };
 }
