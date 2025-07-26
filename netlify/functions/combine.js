@@ -22,8 +22,6 @@ export async function handler(event, context) {
     'https://raw.githubusercontent.com/TelAB841Conf/AB_841-config-Free-X-ray/refs/heads/main/X-ray_Server-Free',
     'https://raw.githubusercontent.com/rango-cfs/NewCollector/refs/heads/main/v2ray_links.txt',
     'https://raw.githubusercontent.com/4n0nymou3/multi-proxy-config-fetcher/refs/heads/main/configs/proxy_configs.txt',
-    'https://raw.githubusercontent.com/IranianCypherpunks/SingBox/refs/heads/main/Sub',
-    'https://raw.githubusercontent.com/valid7996/Gozargah/refs/heads/main/Gozargah_sing-box_sub',
     'https://trojanvmess.pages.dev/cmcm?b64',
     'https://raw.githubusercontent.com/valid7996/Gozargah/refs/heads/main/Gozargah.yaml',
     'https://raw.githubusercontent.com/aiboboxx/clashfree/refs/heads/main/clash.yml',
