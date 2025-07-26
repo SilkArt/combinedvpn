@@ -43,9 +43,17 @@ export async function handler(event, context) {
     try {
       const res = await fetch(url);
       if (!res.ok) continue;
-      combined += await res.text() + '\n';
-    } catch (err) {
-      // Skip failed URLs silently
+      const text = await res.text();
+
+      // Remove only lines that begin with // and contain a colon
+      const cleaned = text
+        .split('\n')
+        .filter(line => !/^\/\/.*?:/.test(line.trim()))
+        .join('\n');
+
+      combined += cleaned + '\n';
+    } catch (_) {
+      // silently skip
     }
   }
 
@@ -55,6 +63,6 @@ export async function handler(event, context) {
       'Content-Type': 'text/plain',
       'Cache-Control': 'no-cache'
     },
-    body: combined.trim() // clean trailing newline
+    body: combined.trim()
   };
 }
