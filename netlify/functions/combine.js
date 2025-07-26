@@ -49,9 +49,9 @@ export async function handler(event, context) {
         .split('\n')
         // Remove lines like "//key: value"
         .filter(line => !/^\/\/.*?:/.test(line.trim()))
-        // Remove lines that contain "VLESS Link:"
-        .filter(line => !line.includes('VLESS Link:'))
-        // Remove anything after '#' (including the '#' itself)
+        // Remove lines containing "VLESS Link:" or "VMESS Link:"
+        .filter(line => !/VLESS Link:|VMESS Link:/i.test(line))
+        // Remove anything after '#' (including '#')
         .map(line => line.split('#')[0].trim())
         // Remove malformed characters (non-standard Unicode)
         .map(line =>
@@ -65,7 +65,7 @@ export async function handler(event, context) {
 
       combined += cleaned + '\n';
     } catch (_) {
-      // silently skip failed fetches
+      // skip failed fetches
     }
   }
 
