@@ -45,15 +45,17 @@ export async function handler(event, context) {
       if (!res.ok) continue;
       const text = await res.text();
 
-      // Remove only lines that begin with // and contain a colon
       const cleaned = text
         .split('\n')
+        // Remove lines like "//key: value"
         .filter(line => !/^\/\/.*?:/.test(line.trim()))
-        .join('\n');
+        .join('\n')
+        // Remove malformed or invalid characters (common emoji encoding issues)
+        .replace(/[^\x09\x0A\x0D\x20-\x7E\u00A0-\u024F\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u2000-\u206F\u2E00-\u2E7F\u3000-\u303F\u4E00-\u9FFF\uFF00-\uFFEF]/g, '');
 
       combined += cleaned + '\n';
     } catch (_) {
-      // silently skip
+      // skip silently
     }
   }
 
