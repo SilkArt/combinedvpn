@@ -49,9 +49,17 @@ export async function handler(event, context) {
         .split('\n')
         // Remove lines like "//key: value"
         .filter(line => !/^\/\/.*?:/.test(line.trim()))
-        .join('\n')
-        // Remove malformed or invalid characters (common emoji encoding issues)
-        .replace(/[^\x09\x0A\x0D\x20-\x7E\u00A0-\u024F\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u2000-\u206F\u2E00-\u2E7F\u3000-\u303F\u4E00-\u9FFF\uFF00-\uFFEF]/g, '');
+        // Remove anything after '#' (including the '#' itself)
+        .map(line => line.split('#')[0].trim())
+        // Remove malformed characters (non-standard Unicode)
+        .map(line =>
+          line.replace(
+            /[^\x09\x0A\x0D\x20-\x7E\u00A0-\u024F\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u2000-\u206F\u2E00-\u2E7F\u3000-\u303F\u4E00-\u9FFF\uFF00-\uFFEF]/g,
+            ''
+          )
+        )
+        .filter(line => line.length > 0)
+        .join('\n');
 
       combined += cleaned + '\n';
     } catch (_) {
