@@ -1,9 +1,0 @@
-[build]
-  functions = "netlify/functions"
-  command = "npm run build"  # optional, if you have build scripts
-
-[functions]
-
-  [functions.background_timeout]
-  # timeout in seconds
-  seconds = 900
