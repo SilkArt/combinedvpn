@@ -25,11 +25,9 @@ jobs:
         run: node scripts/update-proxies.mjs
 
       - name: Commit and push if changed
-        env:
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add proxies.txt
           git diff --cached --quiet || git commit -m "Update proxies.txt"
-          git push https://$PAT_TOKEN@github.com/SilkArt/combinedvpn.git HEAD:main
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/SilkArt/combinedvpn.git HEAD:main
