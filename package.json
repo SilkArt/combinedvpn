@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@netlify/blobs": "^10.0.3",
-    "@netlify/plugin-scheduled-functions": "^2.26.3"
+    "@netlify/plugin-scheduled-functions": "^2.26.3",
     "node-fetch": "^3.3.2"
   },
   "engines": {
