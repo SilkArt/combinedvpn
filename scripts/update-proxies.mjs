@@ -55,6 +55,11 @@ const urls = [
   'https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Special/Telegram.txt',
 ];
 
+function log(message) {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${message}`);
+}
+
 function measureLatency(host, port, timeout = 1000) {
   return new Promise(resolve => {
     if (!port || port < 0 || port >= 65536) return resolve(null);
@@ -92,7 +97,9 @@ function parseHostPort(line) {
         return { host, port: Number(portStr) };
       }
     }
-  } catch {}
+  } catch (err) {
+    log(`Error parsing host/port: ${err.message}`);
+  }
   return null;
 }
 
@@ -116,12 +123,16 @@ async function limitedParallelMap(array, fn, limit = 10) {
 (async () => {
   let lines = [];
 
+  log(`Starting proxy fetch from ${urls.length} URLs...`);
   for (const url of urls) {
     try {
+      log(`Fetching: ${url}`);
       const res = await fetch(url);
-      if (!res.ok) continue;
+      if (!res.ok) {
+        log(`Failed to fetch: ${url} - Status: ${res.status}`);
+        continue;
+      }
       const text = await res.text();
-
       const cleaned = text
         .split('\n')
         .filter(line => !/^\/\/.*?:/.test(line.trim()))
@@ -135,21 +146,35 @@ async function limitedParallelMap(array, fn, limit = 10) {
         )
         .filter(line => line.length > 0);
 
+      log(`Fetched and cleaned ${cleaned.length} lines from: ${url}`);
       lines.push(...cleaned);
-    } catch (_) {}
+    } catch (err) {
+      log(`Error fetching ${url}: ${err.message}`);
+    }
   }
+
+  log(`Total lines collected: ${lines.length}`);
+  log(`Starting latency checks...`);
 
   const withLatency = await limitedParallelMap(
     lines,
     async line => {
       const info = parseHostPort(line);
-      if (!info || !info.host || !info.port) return `${line} #unresolved`;
+      if (!info || !info.host || !info.port) {
+        log(`Unresolved line: ${line}`);
+        return `${line} #unresolved`;
+      }
+
       const latency = await measureLatency(info.host, info.port);
+      const status = latency !== null ? `${latency}ms` : 'timeout';
+      log(`Checked ${info.host}:${info.port} - ${status}`);
       return latency !== null ? `${line} #${latency}ms` : `${line} #timeout`;
     },
     15
   );
 
+  log(`Latency checks complete. Writing to ${OUTPUT_PATH}...`);
   const result = withLatency.join('\n');
   await fs.writeFile(OUTPUT_PATH, result, 'utf-8');
+  log(`Finished writing output to ${OUTPUT_PATH}`);
 })();
