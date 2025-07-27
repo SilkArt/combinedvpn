@@ -81,6 +81,10 @@ async function writeBlobCache(text) {
 
 function measureLatency(host, port, timeout = 1000) {
   return new Promise(resolve => {
+    if (!port || port < 0 || port >= 65536) {
+      // invalid port, skip
+      return resolve(null);
+    }
     const start = Date.now();
     const socket = net.connect(port, host);
 
@@ -104,20 +108,28 @@ function parseHostPort(line) {
     if (/^vmess:\/\//.test(line)) {
       const base64 = line.replace(/^vmess:\/\//, '').split('#')[0].trim();
       const json = JSON.parse(Buffer.from(base64, 'base64').toString('utf8'));
-      return { host: json.add, port: Number(json.port) };
+      const port = Number(json.port);
+      if (!port || port < 0 || port >= 65536) return null;
+      return { host: json.add, port };
     } else if (/^(vless|trojan):\/\//.test(line)) {
       const url = new URL(line);
-      return { host: url.hostname, port: Number(url.port || 443) };
+      const port = Number(url.port || 443);
+      if (!port || port < 0 || port >= 65536) return null;
+      return { host: url.hostname, port };
     } else if (/^ss:\/\//.test(line)) {
       const cleaned = line.replace(/^ss:\/\//, '').split('#')[0];
       const atIndex = cleaned.lastIndexOf('@');
       if (atIndex !== -1) {
         const server = cleaned.substring(atIndex + 1);
-        const [host, port] = server.split(':');
-        return { host, port: Number(port) };
+        const [host, portStr] = server.split(':');
+        const port = Number(portStr);
+        if (!port || port < 0 || port >= 65536) return null;
+        return { host, port };
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    // parsing failed
+  }
   return null;
 }
 
