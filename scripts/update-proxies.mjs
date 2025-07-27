@@ -103,6 +103,50 @@ function parseHostPort(line) {
   return null;
 }
 
+function tryBase64Decode(str) {
+  try {
+    // Decode and check if the decoded string is valid UTF-8 text
+    const decoded = Buffer.from(str, 'base64').toString('utf8');
+    // Heuristic: decoded string should have some printable characters
+    if (/[\x20-\x7E]/.test(decoded)) {
+      return decoded;
+    }
+  } catch {
+    // ignore decoding errors
+  }
+  return null;
+}
+
+function decodeLineIfBase64(line) {
+  line = line.trim();
+
+  // Case 1: vmess://base64encodedjson
+  if (line.startsWith('vmess://')) {
+    const base64part = line.slice('vmess://'.length).split('#')[0];
+    const decoded = tryBase64Decode(base64part);
+    if (decoded) {
+      // Return decoded JSON as vmess:// + json string (or just json string?)
+      // For consistency, return as vmess:// + decoded JSON base64 again (or just decoded string?)
+      // Here let's return decoded as vmess:// + decoded json string for further processing
+      return `vmess://${decoded}`;
+    }
+    // If failed decoding, return original line
+    return line;
+  }
+
+  // Could add similar logic for other protocols if needed (vless, trojan, etc.)
+
+  // Case 2: Entire line might be base64 (e.g., raw base64 proxy)
+  // Try decoding entire line
+  const decoded = tryBase64Decode(line);
+  if (decoded) {
+    return decoded;
+  }
+
+  // Otherwise, return original plaintext line
+  return line;
+}
+
 async function limitedParallelMap(array, fn, limit = 10) {
   const results = [];
   const executing = [];
@@ -137,7 +181,7 @@ async function limitedParallelMap(array, fn, limit = 10) {
         .split('\n')
         .filter(line => !/^\/\/.*?:/.test(line.trim()))
         .filter(line => !/VLESS Link:|VMESS Link:/i.test(line))
-        .map(line => line.split('#')[0].trim())
+        .map(line => decodeLineIfBase64(line.split('#')[0].trim()))
         .map(line =>
           line.replace(
             /[^\x09\x0A\x0D\x20-\x7E\u00A0-\u024F\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u2000-\u206F\u2E00-\u2E7F\u3000-\u303F\u4E00-\u9FFF\uFF00-\uFFEF]/g,
@@ -145,7 +189,7 @@ async function limitedParallelMap(array, fn, limit = 10) {
           )
         )
         .filter(line => line.length > 0);
-
+      
       log(`Fetched and cleaned ${cleaned.length} lines from: ${url}`);
       lines.push(...cleaned);
     } catch (err) {
