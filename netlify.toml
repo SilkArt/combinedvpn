@@ -7,10 +7,3 @@
   [functions.background_timeout]
   # timeout in seconds
   seconds = 900
-
-[[plugins]]
-  package = "@netlify/plugin-scheduled-functions"
-
-  [plugins.inputs]
-    function = "handler"
-    schedule = "*/15 * * * *"
