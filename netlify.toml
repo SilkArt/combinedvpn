@@ -3,21 +3,11 @@
   command = "npm run build"  # optional, if you have build scripts
 
 [functions]
-  # Use background functions to allow longer execution time for latency checks
-  # Netlify automatically treats functions with suffix `.background.js` as background functions,
-  # so name your handler file accordingly, for example: handler.background.js
-  # Or explicitly define:
-  #   background_timeout = 900  # up to 15 minutes allowed for background functions
-
-  # To explicitly set max execution time for background functions
   background_timeout = 900
 
 [[plugins]]
   package = "@netlify/plugin-scheduled-functions"
 
-[[plugins.inputs]]
-  # Setup a schedule for your function named "handler"
-  # The schedule uses cron syntax; this runs every 15 minutes
-  # Replace "handler" with your actual function name (without .js)
-  function = "handler"
-  schedule = "*/15 * * * *"
+  [plugins.inputs]
+    function = "handler"
+    schedule = "*/15 * * * *"
