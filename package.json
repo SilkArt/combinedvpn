@@ -1,18 +1,6 @@
 {
-  "name": "netlify-proxy-latency",
-  "version": "1.0.0",
-  "description": "Netlify Function to fetch proxies and append latency with caching",
-  "main": "netlify/functions/handler.background.js",
-  "scripts": {
-    "start": "netlify dev",
-    "build": "echo \"No build step needed\""
-  },
+  "type": "module",
   "dependencies": {
-    "@netlify/blobs": "^10.0.3",
     "node-fetch": "^3.3.2"
-  },
-  "engines": {
-    "node": "22.x"
-  },
-  "type": "module"
+  }
 }
